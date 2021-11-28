@@ -1,23 +1,8 @@
-import jwtDecoder from 'jwt-decode';
 import createError from 'http-errors';
-import type { JwtToken, Rule } from './types';
+import type { Rule } from './types/models';
 
-const parseToken = (token: string): JwtToken & { iss: string } => jwtDecoder(token);
-
-export const authorize = async (jwtToken: string, executionRule: Rule): Promise<void> => {
-  let token: JwtToken;
-
-  try {
-    token = parseToken(jwtToken);
-  } catch {
-    throw createError(403, 'invalid token: parse failed');
-  }
-
-  if (!token.iss) {
-    throw createError(403, 'invalid token: missing issuer');
-  }
-
-  const ruleResult = await executionRule(token);
+export const authorize = async <T>(decodedToken: T, executionRule: Rule<T>): Promise<void> => {
+  const ruleResult = await executionRule(decodedToken);
 
   if (!ruleResult.passed) {
     throw createError(403, 'operation not authorized');
@@ -25,9 +10,9 @@ export const authorize = async (jwtToken: string, executionRule: Rule): Promise<
 };
 
 export const and =
-  (rules: Rule[]): Rule =>
-  async (token: JwtToken) => {
-    const ruleResults = await Promise.all(rules.map((rule) => rule(token)));
+  <T>(rules: Rule<T>[]): Rule<T> =>
+  async (decodedToken: T) => {
+    const ruleResults = await Promise.all(rules.map((rule) => rule(decodedToken)));
     const failed = ruleResults.find((result) => !result.passed);
 
     if (!failed) {
@@ -38,9 +23,9 @@ export const and =
   };
 
 export const or =
-  (rules: Rule[]): Rule =>
-  async (token: JwtToken) => {
-    const ruleResults = await Promise.all(rules.map((rule) => rule(token)));
+  <T>(rules: Rule<T>[]): Rule<T> =>
+  async (decodedToken: T) => {
+    const ruleResults = await Promise.all(rules.map((rule) => rule(decodedToken)));
     const success = ruleResults.find((result) => result.passed);
 
     if (!success) {

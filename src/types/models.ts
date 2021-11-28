@@ -3,7 +3,7 @@ export interface JwtToken {
   sub: string;
 }
 
-export type Rule = (token: JwtToken) => Promise<RuleResult>;
+export type Rule<T> = (token: T) => Promise<RuleResult> | RuleResult;
 
 export interface RuleResult {
   passed: boolean;
