@@ -1,5 +1,5 @@
 import createError from 'http-errors';
-import type { Rule } from './types/models';
+import type { Rule } from './types';
 
 export const authorize = async <T>(decodedToken: T, executionRule: Rule<T>): Promise<void> => {
   const ruleResult = await executionRule(decodedToken);
