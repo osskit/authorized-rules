@@ -2,7 +2,7 @@
 
 # authorized-rules
 
-## Add your custom rules to authorize your tokens
+  Add your custom rules to authorize your tokens 🔐
 
 </div>
 
